@@ -2,8 +2,9 @@
 // Stack: Slack Bolt (Socket Mode) + Google Gemini Embeddings + Google Sheets CSV
 
 require("dotenv").config();
-console.log("ENV CHECK — BOT_TOKEN:", process.env.SLACK_BOT_TOKEN ? "present" : "MISSING");
-console.log("ENV CHECK — APP_TOKEN:", process.env.SLACK_APP_TOKEN ? "present" : "MISSING");
+console.log("ENV CHECK v2 — BOT_TOKEN:", process.env.SLACK_BOT_TOKEN ? "present" : "MISSING");
+console.log("ENV CHECK v2 — APP_TOKEN:", process.env.SLACK_APP_TOKEN ? "present" : "MISSING");
+console.log("ENV CHECK v2 — all keys:", Object.keys(process.env).filter(k => k.startsWith("SLACK")).join(", ") || "none");
 const { App } = require("@slack/bolt");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fetch = require("node-fetch");
