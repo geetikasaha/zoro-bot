@@ -1,0 +1,17 @@
+# Sensitive credentials — never commit these
+.env
+env
+
+# Database — contains embedded vectors, regenerated on startup
+faq_store.db
+*.db
+
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
