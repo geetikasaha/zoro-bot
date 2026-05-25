@@ -245,16 +245,29 @@ async function _doSyncFAQs() {
   const dbMap = new Map(existing.map(r => [r.question, r]));
 
   console.log("🔄 Checking Google Sheet for FAQ changes…");
-  const res = await fetch(SHEET_CSV_URL, {
-    redirect: 'follow',
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; ZoroBot/1.0)',
-      'Accept': 'text/csv,text/plain,*/*',
-    },
-  });
-  console.log(`📡 CSV fetch status: ${res.status}, content-type: ${res.headers.get('content-type')}`);
-  const csv = await res.text();
-  console.log(`📡 CSV response preview: ${csv.slice(0, 100)}`);
+  const browserHeaders = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+  };
+
+  // Manually follow redirect so we can pass full browser headers to the CDN hop
+  const res1 = await fetch(SHEET_CSV_URL, { redirect: 'manual', headers: browserHeaders });
+  console.log(`📡 Step 1 status: ${res1.status}`);
+
+  let csv;
+  if (res1.status >= 300 && res1.status < 400) {
+    const redirectUrl = res1.headers.get('location');
+    console.log(`📡 Redirecting to: ${redirectUrl?.slice(0, 80)}…`);
+    const res2 = await fetch(redirectUrl, {
+      headers: { ...browserHeaders, 'Referer': 'https://docs.google.com/' },
+    });
+    console.log(`📡 Step 2 status: ${res2.status}, content-type: ${res2.headers.get('content-type')}`);
+    csv = await res2.text();
+  } else {
+    csv = await res1.text();
+  }
+  console.log(`📡 CSV preview: ${csv.slice(0, 120)}`);
 
   if (csv.trim().startsWith('<') || !csv.includes(',')) {
     console.log("⚠️ CSV URL returned HTML instead of CSV — skipping sync, keeping existing DB data");
