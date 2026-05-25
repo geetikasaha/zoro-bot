@@ -325,6 +325,7 @@ setInterval(() => {
 // ─── Semantic Search (FAQ only) ───────────────────────────────────────────────
 async function findTopMatches(userQuery, topN = 4) {
   const faqs = await fetchFAQs();
+  if (!faqs.length) return [];
   const queryVec = await embedQuery(userQuery);
 
   return faqs
@@ -506,6 +507,15 @@ app.event("message", async ({ event, client, logger }) => {
 
     // 4. FAQ search
     const topMatches = await findTopMatches(userQuery);
+
+    if (!topMatches.length) {
+      await client.chat.postMessage({
+        channel: event.channel,
+        text: `I'm still loading my knowledge base — please try again in a moment! 😊\n\nIf it's urgent, reach out to *${FALLBACK_EMAIL}*`,
+      });
+      return;
+    }
+
     const best = topMatches[0];
     console.log(`🎯 Best match: ${Math.round(best.score * 100)}% — "${best.question}"`);
     trackUnseen(userQuery, best.score);
