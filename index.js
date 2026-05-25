@@ -21,9 +21,9 @@ const PROGRAM_DOC_URL = process.env.PROGRAM_DOC_URL || "https://docs.google.com/
 const FALLBACK_EMAIL       = "shivangi.tiwari@newtonschool.co";
 const CACHE_TTL_MS         = 30 * 60 * 1000;
 const THRESHOLD_HIGH_FAQ   = 0.80;  // direct answer for FAQ matches
-const THRESHOLD_HIGH_DOC   = 0.62;  // direct answer for program doc matches (lower — doc is authoritative)
+const THRESHOLD_HIGH_DOC   = 0.75;  // direct answer for program doc matches
 const THRESHOLD_EXACT      = 0.45;  // used inside buildFAQResponse fallback only
-const THRESHOLD_PARTIAL    = 0.30;  // minimum relevance — below this, nothing useful found
+const THRESHOLD_PARTIAL    = 0.42;  // minimum relevance for clarification options
 
 // ─── Emotion Detection ────────────────────────────────────────────────────────
 const EMOTION_TRIGGERS = {
@@ -175,6 +175,22 @@ const CURATED_KNOWLEDGE = [
   {
     section: "Placement Eligibility Criteria",
     content: "To be eligible for placement referrals, a student must: complete 80% of all learning components (lectures, assignments, projects, contests, mentor sessions) across all modules, score at least 8/10 on projects, score at least 65% in contests, and maintain required attendance.",
+  },
+  {
+    section: "Program Overview",
+    content: "Newton School's Data Science program is a 13-month course with 4 phases. Phase 1 Data Analyst covers Excel (5 weeks), SQL (8 weeks), and Power BI (3 weeks). Phase 2 Business Analyst covers Python, EDA 1, and EDA 2 (4 months total). Phase 3 Data Science covers ML1, ML2, MLOPS, and Deep Learning. After each phase there is a 2-week Placement Phase for eligible students. Live classes run Monday, Wednesday, Friday 9–11 PM IST. 80% completion of all components is required for placement and certification.",
+  },
+  {
+    section: "Finance and EMI Issues",
+    content: "For EMI payment problems, inability to pay EMI, payment reminders, wrong EMI amounts, requests to pause EMI, portal access blocked due to pending fees, or loan document issues — contact admissions-success@newtonschool.co. For EMI date changes or general finance queries, email support@newtonschool.co. Once pending fees are paid, the team will restore portal access.",
+  },
+  {
+    section: "Support Contacts",
+    content: "General queries: support@newtonschool.co. Finance and EMI issues: admissions-success@newtonschool.co. Placement queries: placements.ds@newtonschool.co. Technical bugs: raise a ticket with a screenshot or video and a short description. Referral bonus: contact your success manager or email support@newtonschool.co.",
+  },
+  {
+    section: "Certificates — Where to Get and How to Download",
+    content: "There are three types of certificates. Course Completion Certificate: sent via email after full course completion. Module Completion Certificate: available on the Feed section of the Newton School portal. Phase Completion Certificate: available on request from the support team at support@newtonschool.co, sent via email after processing. Certificate eligibility requires 80% attendance, 80% assignment completion, and project scores of 8 out of 10 or above.",
   },
 ];
 
@@ -777,24 +793,35 @@ app.event("message", async ({ event, client, logger }) => {
     // 4. Normal FAQ search
     const topMatches = await findTopMatches(userQuery);
     const best = topMatches[0];
-    console.log(`🎯 Best match score: ${Math.round(best.score * 100)}% — "${best.question}"`);
-    trackUnseen(userQuery, best.score);
 
-    const threshold = (best.source === 'doc' || best.source === 'curated') ? THRESHOLD_HIGH_DOC : THRESHOLD_HIGH_FAQ;
-    if (best.score >= threshold) {
+    // Prefer FAQ over doc/curated when scores are close — FAQs are more specific
+    const bestFAQ = topMatches.find(m => m.source === 'faq');
+    const chosen = (best.source !== 'faq' && bestFAQ && bestFAQ.score >= THRESHOLD_PARTIAL && (best.score - bestFAQ.score) < 0.15)
+      ? bestFAQ
+      : best;
+
+    console.log(`🎯 Best match: ${Math.round(best.score * 100)}% [${best.source}] — "${best.question}"`);
+    if (chosen !== best) console.log(`🔀 Preferring FAQ: ${Math.round(chosen.score * 100)}% — "${chosen.question}"`);
+    trackUnseen(userQuery, chosen.score);
+
+    const threshold = (chosen.source === 'doc' || chosen.source === 'curated') ? THRESHOLD_HIGH_DOC : THRESHOLD_HIGH_FAQ;
+    if (chosen.score >= threshold) {
       // High confidence — answer directly
-      const replyText = await buildFAQResponse(best, best.score, userQuery);
+      const replyText = await buildFAQResponse(chosen, chosen.score, userQuery);
       await client.chat.postMessage({
         channel: event.channel,
         text: replyText,
         blocks: [
           { type: "section", text: { type: "mrkdwn", text: replyText } },
-          { type: "context", elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_ • Confidence: ${Math.round(best.score * 100)}%` }] },
+          { type: "context", elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_ • Confidence: ${Math.round(chosen.score * 100)}%` }] },
         ],
       });
     } else {
-      // Below 80% — ask user to pick the most relevant subcategory
-      const relevantOptions = topMatches.filter(m => m.score >= 0.30);
+      // Below threshold — ask user to pick the most relevant option
+      // Prefer FAQ matches in clarification — they are more specific than doc/curated chunks
+      const allRelevant = topMatches.filter(m => m.score >= THRESHOLD_PARTIAL);
+      const faqRelevant = allRelevant.filter(m => m.source === 'faq');
+      const relevantOptions = faqRelevant.length >= 2 ? faqRelevant : allRelevant;
       if (relevantOptions.length === 0) {
         // Nothing relevant at all — generic fallback
         const replyText = await buildFAQResponse(best, best.score, userQuery);
