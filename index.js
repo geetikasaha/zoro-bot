@@ -245,8 +245,16 @@ async function _doSyncFAQs() {
   const dbMap = new Map(existing.map(r => [r.question, r]));
 
   console.log("🔄 Checking Google Sheet for FAQ changes…");
-  const res = await fetch(SHEET_CSV_URL);
+  const res = await fetch(SHEET_CSV_URL, {
+    redirect: 'follow',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; ZoroBot/1.0)',
+      'Accept': 'text/csv,text/plain,*/*',
+    },
+  });
+  console.log(`📡 CSV fetch status: ${res.status}, content-type: ${res.headers.get('content-type')}`);
   const csv = await res.text();
+  console.log(`📡 CSV response preview: ${csv.slice(0, 100)}`);
 
   if (csv.trim().startsWith('<') || !csv.includes(',')) {
     console.log("⚠️ CSV URL returned HTML instead of CSV — skipping sync, keeping existing DB data");
