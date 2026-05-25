@@ -6,15 +6,15 @@ console.log("ENV CHECK — BOT_TOKEN:", process.env.SLACK_BOT_TOKEN ? "present" 
 console.log("ENV CHECK — APP_TOKEN:", process.env.SLACK_APP_TOKEN ? "present" : "MISSING");
 const { App } = require("@slack/bolt");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fetch = require("node-fetch");
 const Database = require("better-sqlite3");
 const crypto = require("crypto");
+const fs = require("fs");
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_APP_TOKEN = process.env.SLACK_APP_TOKEN;
 const GEMINI_API_KEY  = process.env.GEMINI_API_KEY;
-const SHEET_CSV_URL   = process.env.SHEET_CSV_URL;
+const FAQ_CSV_PATH    = "./faq.csv";
 
 const FALLBACK_EMAIL    = "shivangi.tiwari@newtonschool.co";
 const CACHE_TTL_MS      = 30 * 60 * 1000;
@@ -244,36 +244,13 @@ async function _doSyncFAQs() {
   const existing = db.prepare("SELECT * FROM faqs").all();
   const dbMap = new Map(existing.map(r => [r.question, r]));
 
-  console.log("🔄 Checking Google Sheet for FAQ changes…");
-  const browserHeaders = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.9',
-  };
-
-  // Manually follow redirect so we can pass full browser headers to the CDN hop
-  const res1 = await fetch(SHEET_CSV_URL, { redirect: 'manual', headers: browserHeaders });
-  console.log(`📡 Step 1 status: ${res1.status}`);
-
-  let csv;
-  if (res1.status >= 300 && res1.status < 400) {
-    const redirectUrl = res1.headers.get('location');
-    console.log(`📡 Redirecting to: ${redirectUrl?.slice(0, 80)}…`);
-    const res2 = await fetch(redirectUrl, {
-      headers: { ...browserHeaders, 'Referer': 'https://docs.google.com/' },
-    });
-    console.log(`📡 Step 2 status: ${res2.status}, content-type: ${res2.headers.get('content-type')}`);
-    csv = await res2.text();
-  } else {
-    csv = await res1.text();
-  }
-  console.log(`📡 CSV preview: ${csv.slice(0, 120)}`);
-
-  if (csv.trim().startsWith('<') || !csv.includes(',')) {
-    console.log("⚠️ CSV URL returned HTML instead of CSV — skipping sync, keeping existing DB data");
+  console.log("🔄 Reading FAQ from local faq.csv…");
+  if (!fs.existsSync(FAQ_CSV_PATH)) {
+    console.log("⚠️ faq.csv not found — loading from DB");
     faqCache = loadCacheFromDB();
     return faqCache;
   }
+  const csv = fs.readFileSync(FAQ_CSV_PATH, "utf8");
 
   const allRows = parseCSV(csv);
   const sheetRows = allRows
@@ -331,17 +308,7 @@ async function _doSyncFAQs() {
   return faqCache;
 }
 
-// Periodic FAQ sync every 30 minutes
-setInterval(() => {
-  faqCache = [];
-  refreshPromise = (async () => {
-    try { return await _doSyncFAQs(); }
-    catch (err) {
-      console.log("⚠️ FAQ sync skipped (network error):", err.message);
-      if (!faqCache.length) faqCache = loadCacheFromDB();
-    } finally { refreshPromise = null; }
-  })();
-}, CACHE_TTL_MS);
+// No periodic sync needed — FAQ is read from faq.csv on startup (redeploy to update)
 
 // ─── Semantic Search (FAQ only) ───────────────────────────────────────────────
 async function findTopMatches(userQuery, topN = 4) {
