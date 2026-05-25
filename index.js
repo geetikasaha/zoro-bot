@@ -2,35 +2,31 @@
 // Stack: Slack Bolt (Socket Mode) + Google Gemini Embeddings + Google Sheets CSV
 
 require("dotenv").config();
-console.log("ENV CHECK v2 — BOT_TOKEN:", process.env.SLACK_BOT_TOKEN ? "present" : "MISSING");
-console.log("ENV CHECK v2 — APP_TOKEN:", process.env.SLACK_APP_TOKEN ? "present" : "MISSING");
-console.log("ENV CHECK v2 — all keys:", Object.keys(process.env).filter(k => k.startsWith("SLACK")).join(", ") || "none");
+console.log("ENV CHECK — BOT_TOKEN:", process.env.SLACK_BOT_TOKEN ? "present" : "MISSING");
+console.log("ENV CHECK — APP_TOKEN:", process.env.SLACK_APP_TOKEN ? "present" : "MISSING");
 const { App } = require("@slack/bolt");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fetch = require("node-fetch");
 const Database = require("better-sqlite3");
 const crypto = require("crypto");
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN;
 const SLACK_APP_TOKEN = process.env.SLACK_APP_TOKEN;
 const GEMINI_API_KEY  = process.env.GEMINI_API_KEY;
 const SHEET_CSV_URL   = process.env.SHEET_CSV_URL;
-const PROGRAM_DOC_URL = process.env.PROGRAM_DOC_URL || "https://docs.google.com/document/d/e/2PACX-1vTol8n_h9Fd_eab81q78vXfa160iA3q393tkIEm7FMdxx2DxYXceNrEmlpnGRcpZ2qGJ-M-_wLMQiJy/pub";
 
-const FALLBACK_EMAIL       = "shivangi.tiwari@newtonschool.co";
-const CACHE_TTL_MS         = 30 * 60 * 1000;
-const THRESHOLD_HIGH_FAQ   = 0.80;  // direct answer for FAQ matches
-const THRESHOLD_HIGH_DOC   = 0.75;  // direct answer for program doc matches
-const THRESHOLD_EXACT      = 0.45;  // used inside buildFAQResponse fallback only
-const THRESHOLD_PARTIAL    = 0.42;  // minimum relevance for clarification options
+const FALLBACK_EMAIL    = "shivangi.tiwari@newtonschool.co";
+const CACHE_TTL_MS      = 30 * 60 * 1000;
+const THRESHOLD_HIGH    = 0.80;  // answer directly
+const THRESHOLD_PARTIAL = 0.42;  // show clarification options
 
 // ─── Emotion Detection ────────────────────────────────────────────────────────
 const EMOTION_TRIGGERS = {
   angry: [
     "useless", "worst", "terrible", "horrible", "pathetic", "disgusting",
     "fraud", "scam", "cheated", "lied", "waste of money", "waste of time",
-    "money wasted", "fed up", "sick of", "fed up", "ridiculous", "unacceptable",
+    "money wasted", "fed up", "sick of", "ridiculous", "unacceptable",
     "not acceptable", "this is bad", "very bad", "so bad", "awful",
     "unprofessional", "incompetent", "rubbish", "nonsense", "bullshit",
     "hate this", "hate you", "terrible service", "poor service", "bad service",
@@ -66,9 +62,7 @@ function detectEmotion(text) {
   return null;
 }
 
-function buildEmotionalResponse(emotion, userQuery) {
-  const q = userQuery.toLowerCase();
-
+function buildEmotionalResponse(emotion) {
   if (emotion === "placement_distress") {
     return (
       `I hear you, and I genuinely understand how stressful and disappointing this feels. 💙\n\n` +
@@ -77,7 +71,6 @@ function buildEmotionalResponse(emotion, userQuery) {
       `You deserve a proper response, and I hope things turn around for you soon. 🙏`
     );
   }
-
   if (emotion === "angry") {
     return (
       `I'm really sorry you're feeling this way — and I completely understand your frustration. 😔\n\n` +
@@ -87,7 +80,6 @@ function buildEmotionalResponse(emotion, userQuery) {
       `I'm sorry I couldn't resolve this myself — I hope the team gets back to you very soon.`
     );
   }
-
   if (emotion === "frustrated") {
     return (
       `I'm sorry this has been frustrating — that's the last thing you should feel when you're trying to get help. 😔\n\n` +
@@ -97,10 +89,8 @@ function buildEmotionalResponse(emotion, userQuery) {
       `I hope this gets sorted out for you quickly!`
     );
   }
-
   return null;
 }
-
 
 // ─── Greeting detection ───────────────────────────────────────────────────────
 const GREETINGS = ["hi", "hello", "hey", "hii", "helo", "howdy", "good morning", "good evening", "good afternoon", "yo", "sup"];
@@ -109,7 +99,7 @@ function isGreeting(text) {
   return GREETINGS.some(g => text.toLowerCase().trim().startsWith(g) && text.trim().length < 20);
 }
 
-// ─── Clients ─────────────────────────────────────────────────────────────────
+// ─── Clients ──────────────────────────────────────────────────────────────────
 const app = new App({
   token: SLACK_BOT_TOKEN,
   appToken: SLACK_APP_TOKEN,
@@ -118,34 +108,18 @@ const app = new App({
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const embedModel = genAI.getGenerativeModel({ model: "gemini-embedding-001" });
-
 const generativeModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
 // ─── SQLite DB ────────────────────────────────────────────────────────────────
 const db = new Database("./faq_store.db");
 db.exec(`
   CREATE TABLE IF NOT EXISTS faqs (
-    question TEXT PRIMARY KEY,
-    category TEXT,
-    answer   TEXT NOT NULL,
-    hash     TEXT NOT NULL,
-    embedding TEXT NOT NULL,
+    question   TEXT PRIMARY KEY,
+    category   TEXT,
+    answer     TEXT NOT NULL,
+    hash       TEXT NOT NULL,
+    embedding  TEXT NOT NULL,
     updated_at INTEGER NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS doc_chunks (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    section   TEXT NOT NULL,
-    content   TEXT NOT NULL,
-    hash      TEXT NOT NULL,
-    embedding TEXT NOT NULL,
-    updated_at INTEGER NOT NULL
-  );
-  CREATE TABLE IF NOT EXISTS curated_chunks (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    section   TEXT NOT NULL,
-    content   TEXT NOT NULL,
-    hash      TEXT NOT NULL,
-    embedding TEXT NOT NULL
   );
 `);
 
@@ -153,108 +127,14 @@ function rowHash(question, answer) {
   return crypto.createHash("sha256").update(question + "|||" + answer).digest("hex");
 }
 
-// ─── Curated Knowledge Chunks ─────────────────────────────────────────────────
-// Manually maintained high-precision knowledge that supplements the program doc
-const CURATED_KNOWLEDGE = [
-  {
-    section: "Learning Components — Overview",
-    content: "Every module has 5 learning components: Lectures, Assignments, Projects, Contests, and Mentor Sessions. A student must complete at least 80% of each component across all modules to be eligible for placement referrals and certification.",
-  },
-  {
-    section: "Lecture Attendance Criteria",
-    content: "Lecture attendance is tracked for both live and recorded sessions on the Newton School portal. For a session to count as attended, the watch time must be more than 70% of the session duration. Both live and recorded watches are counted.",
-  },
-  {
-    section: "Project Score Requirement",
-    content: "Projects must score a minimum of 8 out of 10 to be considered passing. Feedback is provided within 42 hours of submission. If a student scores below 8, they can resubmit after addressing the feedback.",
-  },
-  {
-    section: "Contest Score Requirement",
-    content: "Contests require a minimum score of 65% to pass. Students must achieve this across two consecutive Sunday attempts to be counted as cleared for that module.",
-  },
-  {
-    section: "Placement Eligibility Criteria",
-    content: "To be eligible for placement referrals, a student must: complete 80% of all learning components (lectures, assignments, projects, contests, mentor sessions) across all modules, score at least 8/10 on projects, score at least 65% in contests, and maintain required attendance.",
-  },
-  {
-    section: "Program Overview",
-    content: "Newton School's Data Science program is a 13-month course with 4 phases. Phase 1 Data Analyst covers Excel (5 weeks), SQL (8 weeks), and Power BI (3 weeks). Phase 2 Business Analyst covers Python, EDA 1, and EDA 2 (4 months total). Phase 3 Data Science covers ML1, ML2, MLOPS, and Deep Learning. After each phase there is a 2-week Placement Phase for eligible students. Live classes run Monday, Wednesday, Friday 9–11 PM IST. 80% completion of all components is required for placement and certification.",
-  },
-  {
-    section: "Finance and EMI Issues",
-    content: "For EMI payment problems, inability to pay EMI, payment reminders, wrong EMI amounts, requests to pause EMI, portal access blocked due to pending fees, or loan document issues — contact admissions-success@newtonschool.co. For EMI date changes or general finance queries, email support@newtonschool.co. Once pending fees are paid, the team will restore portal access.",
-  },
-  {
-    section: "Support Contacts",
-    content: "General queries: support@newtonschool.co. Finance and EMI issues: admissions-success@newtonschool.co. Placement queries: placements.ds@newtonschool.co. Technical bugs: raise a ticket with a screenshot or video and a short description. Referral bonus: contact your success manager or email support@newtonschool.co.",
-  },
-  {
-    section: "Certificates — Where to Get and How to Download",
-    content: "There are three types of certificates. Course Completion Certificate: sent via email after full course completion. Module Completion Certificate: available on the Feed section of the Newton School portal. Phase Completion Certificate: available on request from the support team at support@newtonschool.co, sent via email after processing. Certificate eligibility requires 80% attendance, 80% assignment completion, and project scores of 8 out of 10 or above.",
-  },
-];
-
-let curatedChunksCache = [];
-
-async function syncCuratedChunks() {
-  const upsert = db.prepare(`
-    INSERT INTO curated_chunks (section, content, hash, embedding)
-    VALUES (@section, @content, @hash, @embedding)
-    ON CONFLICT(id) DO UPDATE SET
-      section = excluded.section, content = excluded.content,
-      hash = excluded.hash, embedding = excluded.embedding
-  `);
-  const existing = db.prepare("SELECT * FROM curated_chunks").all();
-  const existingMap = new Map(existing.map(r => [r.section, r]));
-
-  const toEmbed = CURATED_KNOWLEDGE.filter(chunk => {
-    const h = crypto.createHash("sha256").update(chunk.section + chunk.content).digest("hex");
-    const stored = existingMap.get(chunk.section);
-    return !stored || stored.hash !== h;
-  });
-
-  if (toEmbed.length === 0) {
-    console.log("✅ Curated knowledge unchanged — loading from DB");
-  } else {
-    console.log(`🔁 Embedding ${toEmbed.length} curated knowledge chunk(s)…`);
-    for (const chunk of toEmbed) {
-      const h = crypto.createHash("sha256").update(chunk.section + chunk.content).digest("hex");
-      const embedding = await embed(chunk.section + ': ' + chunk.content);
-      upsert.run({ section: chunk.section, content: chunk.content, hash: h, embedding: JSON.stringify(embedding) });
-      await new Promise(r => setTimeout(r, 700));
-    }
-  }
-
-  curatedChunksCache = db.prepare("SELECT * FROM curated_chunks").all().map(r => ({
-    source: 'curated',
-    question: r.section,
-    answer: r.content,
-    category: 'Program Knowledge',
-    embedding: JSON.parse(r.embedding),
-  }));
-  console.log(`✅ ${curatedChunksCache.length} curated knowledge chunks ready`);
-}
-
-function loadCacheFromDB() {
-  return db.prepare("SELECT * FROM faqs").all().map(r => ({
-    category:  r.category,
-    question:  r.question,
-    answer:    r.answer,
-    embedding: JSON.parse(r.embedding),
-  }));
-}
-
-// ─── Proper CSV Parser ────────────────────────────────────────────────────────
+// ─── CSV Parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
   const rows = [];
-  let col = '';
-  let cols = [];
+  let col = '', cols = [];
   let inQuotes = false;
 
   for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const next = text[i + 1];
-
+    const ch = text[i], next = text[i + 1];
     if (ch === '"') {
       if (inQuotes && next === '"') { col += '"'; i++; }
       else inQuotes = !inQuotes;
@@ -269,10 +149,7 @@ function parseCSV(text) {
       col += ch;
     }
   }
-  if (col || cols.length) {
-    cols.push(col.trim());
-    if (cols.some(c => c)) rows.push(cols);
-  }
+  if (col || cols.length) { cols.push(col.trim()); if (cols.some(c => c)) rows.push(cols); }
   return rows;
 }
 
@@ -295,8 +172,8 @@ async function embed(text, retries = 3) {
       return result.embedding.values;
     } catch (err) {
       if (err.status === 429 && i < retries - 1) {
-        console.log(`Rate limited. Waiting 65s before retry ${i + 1}...`);
-        await new Promise((r) => setTimeout(r, 65000));
+        console.log(`Rate limited — waiting 65s before retry ${i + 1}…`);
+        await new Promise(r => setTimeout(r, 65000));
       } else throw err;
     }
   }
@@ -329,22 +206,26 @@ const upsertStmt = db.prepare(`
 `);
 const deleteStmt = db.prepare(`DELETE FROM faqs WHERE question = ?`);
 
+function loadCacheFromDB() {
+  return db.prepare("SELECT * FROM faqs").all().map(r => ({
+    category:  r.category,
+    question:  r.question,
+    answer:    r.answer,
+    embedding: JSON.parse(r.embedding),
+  }));
+}
+
 async function fetchFAQs() {
   if (faqCache.length) return faqCache;
   if (refreshPromise) return refreshPromise;
-
   refreshPromise = (async () => {
-    try {
-      return await _doSyncFAQs();
-    } finally {
-      refreshPromise = null;
-    }
+    try { return await _doSyncFAQs(); }
+    finally { refreshPromise = null; }
   })();
   return refreshPromise;
 }
 
 async function _doSyncFAQs() {
-  // Always serve from DB first so bot is ready instantly on restarts
   const existing = db.prepare("SELECT * FROM faqs").all();
   const dbMap = new Map(existing.map(r => [r.question, r]));
 
@@ -356,23 +237,17 @@ async function _doSyncFAQs() {
   const sheetRows = allRows
     .slice(1)
     .filter(cols => cols.length >= 4)
-    .map(cols => ({
-      category: cols[0] || '',
-      question: cols[2] || '',
-      answer:   cols[3] || '',
-    }))
+    .map(cols => ({ category: cols[0] || '', question: cols[2] || '', answer: cols[3] || '' }))
     .filter(r => r.question && r.answer);
 
   console.log(`📋 Found ${sheetRows.length} FAQ rows in sheet`);
 
-  // Determine what needs re-embedding
   const toEmbed = sheetRows.filter(r => {
     const h = rowHash(r.question, r.answer);
     const stored = dbMap.get(r.question);
     return !stored || stored.hash !== h;
   });
 
-  // Remove FAQs deleted from the sheet
   const sheetQuestions = new Set(sheetRows.map(r => r.question));
   const toDelete = [...dbMap.keys()].filter(q => !sheetQuestions.has(q));
   if (toDelete.length) {
@@ -381,13 +256,12 @@ async function _doSyncFAQs() {
   }
 
   if (toEmbed.length === 0) {
-    console.log("✅ No changes detected — loading from database");
+    console.log("✅ No changes — loading from database");
     faqCache = loadCacheFromDB();
     return faqCache;
   }
 
   console.log(`🔁 ${toEmbed.length} FAQ(s) changed — re-embedding…`);
-  toEmbed.forEach(r => console.log(`  ↳ "${r.question.slice(0, 80)}"`));
   const batchSize = 10;
   for (let i = 0; i < toEmbed.length; i += batchSize) {
     const batch = toEmbed.slice(i, i + batchSize);
@@ -402,11 +276,11 @@ async function _doSyncFAQs() {
         embedding:  JSON.stringify(embedding),
         updated_at: Date.now(),
       });
-      await new Promise((r) => setTimeout(r, 700));
+      await new Promise(r => setTimeout(r, 700));
     }
     if (i + batchSize < toEmbed.length) {
       console.log("Pausing 5s between batches…");
-      await new Promise((r) => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 5000));
     }
   }
 
@@ -415,209 +289,42 @@ async function _doSyncFAQs() {
   return faqCache;
 }
 
-// Periodic sync — FAQs (changed rows only) + program document (hash check)
+// Periodic FAQ sync every 30 minutes
 setInterval(() => {
   faqCache = [];
   refreshPromise = (async () => {
-    try {
-      return await _doSyncFAQs();
-    } catch (err) {
+    try { return await _doSyncFAQs(); }
+    catch (err) {
       console.log("⚠️ FAQ sync skipped (network error):", err.message);
-      // Restore from DB so bot keeps serving answers during network outages
       if (!faqCache.length) faqCache = loadCacheFromDB();
-    } finally {
-      refreshPromise = null;
-    }
+    } finally { refreshPromise = null; }
   })();
-
-  docChunksCache = [];
-  syncDocChunks().catch(err => {
-    console.log("⚠️ Doc sync skipped (network error):", err.message);
-    if (!docChunksCache.length) {
-      docChunksCache = db.prepare("SELECT * FROM doc_chunks").all().map(r => ({
-        source: 'doc', section: r.section, content: r.content,
-        embedding: JSON.parse(r.embedding),
-      }));
-    }
-  });
-
-  syncCuratedChunks().catch(err => console.log("⚠️ Curated sync skipped:", err.message));
 }, CACHE_TTL_MS);
 
-// ─── Program Document RAG ─────────────────────────────────────────────────────
-let docChunksCache = [];
-let docRefreshPromise = null;
-
-function decodeHTML(str) {
-  return str
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function parseHTMLToChunks(html) {
-  // Google Docs published HTML uses flat <p> tags — extract each paragraph as a chunk
-  const chunks = [];
-  const paraMatches = html.match(/<p [^>]*>[\s\S]*?<\/p>/gi) || [];
-
-  const paragraphs = paraMatches
-    .map(p => decodeHTML(p))
-    .filter(t => t.length > 30);
-
-  // Each paragraph is its own chunk (for specific queries)
-  paragraphs.forEach((text, i) => {
-    // Use the first few words as the section label
-    const label = text.split(/[:\-–]/)[0].trim().substring(0, 60) || `Section ${i + 1}`;
-    chunks.push({ section: label, content: text });
-  });
-
-  // Also add a full-document chunk (for broad questions like "what does the program cover?")
-  if (paragraphs.length > 1) {
-    chunks.push({
-      section: 'Program Overview',
-      content: paragraphs.join(' | '),
-    });
-  }
-
-  return chunks;
-}
-
-async function syncDocChunks() {
-  if (docRefreshPromise) return docRefreshPromise;
-  docRefreshPromise = (async () => {
-    try {
-      return await _doSyncDocChunks();
-    } finally {
-      docRefreshPromise = null;
-    }
-  })();
-  return docRefreshPromise;
-}
-
-async function _doSyncDocChunks() {
-  console.log("📄 Fetching program document…");
-  const res = await fetch(PROGRAM_DOC_URL);
-  const html = await res.text();
-  const chunks = parseHTMLToChunks(html);
-  console.log(`📄 Found ${chunks.length} document chunks`);
-
-  // Guard against partial/corrupt fetches — require at least 4 chunks
-  if (chunks.length < 4) {
-    console.log(`⚠️ Doc fetch returned only ${chunks.length} chunk(s) — likely a partial response. Skipping re-embed, restoring from DB.`);
-    const existing = db.prepare("SELECT * FROM doc_chunks").all();
-    if (existing.length) {
-      docChunksCache = existing.map(r => ({
-        source: 'doc', section: r.section, content: r.content,
-        embedding: JSON.parse(r.embedding),
-      }));
-    }
-    return docChunksCache;
-  }
-
-  // Hash only the extracted text content (not the full HTML which has dynamic tokens)
-  const contentFingerprint = chunks.map(c => c.section + c.content).join("||");
-  const docHash = crypto.createHash("sha256").update(contentFingerprint).digest("hex");
-  const storedHash = db.prepare("SELECT hash FROM doc_chunks LIMIT 1").get();
-
-  if (storedHash && storedHash.hash === docHash) {
-    console.log("✅ Program document unchanged — loading from DB");
-    docChunksCache = db.prepare("SELECT * FROM doc_chunks").all().map(r => ({
-      source: 'doc',
-      section: r.section,
-      content: r.content,
-      embedding: JSON.parse(r.embedding),
-    }));
-    return docChunksCache;
-  }
-
-  console.log(`🔁 Program document changed — re-embedding ${chunks.length} chunks…`);
-  db.prepare("DELETE FROM doc_chunks").run();
-
-  const insertChunk = db.prepare(`
-    INSERT INTO doc_chunks (section, content, hash, embedding, updated_at)
-    VALUES (@section, @content, @hash, @embedding, @updated_at)
-  `);
-
-  const batchSize = 10;
-  for (let i = 0; i < chunks.length; i += batchSize) {
-    const batch = chunks.slice(i, i + batchSize);
-    console.log(`Embedding doc chunks ${i + 1}–${Math.min(i + batchSize, chunks.length)} of ${chunks.length}…`);
-    for (const chunk of batch) {
-      const embedding = await embed(chunk.section + ': ' + chunk.content);
-      insertChunk.run({
-        section:    chunk.section,
-        content:    chunk.content,
-        hash:       docHash,
-        embedding:  JSON.stringify(embedding),
-        updated_at: Date.now(),
-      });
-      await new Promise(r => setTimeout(r, 700));
-    }
-    if (i + batchSize < chunks.length) {
-      console.log("Pausing 5s between batches…");
-      await new Promise(r => setTimeout(r, 5000));
-    }
-  }
-
-  docChunksCache = db.prepare("SELECT * FROM doc_chunks").all().map(r => ({
-    source: 'doc',
-    section: r.section,
-    content: r.content,
-    embedding: JSON.parse(r.embedding),
-  }));
-  console.log(`✅ Program document synced — ${docChunksCache.length} chunks ready`);
-  return docChunksCache;
-}
-
-// ─── Semantic Search ──────────────────────────────────────────────────────────
+// ─── Semantic Search (FAQ only) ───────────────────────────────────────────────
 async function findTopMatches(userQuery, topN = 4) {
   const faqs = await fetchFAQs();
-  const docs = docChunksCache.length ? docChunksCache : await syncDocChunks();
   const queryVec = await embedQuery(userQuery);
 
-  const faqScored = faqs.map(faq => ({
-    source:    'faq',
-    question:  faq.question,
-    answer:    faq.answer,
-    category:  faq.category,
-    embedding: faq.embedding,
-    score:     cosineSimilarity(queryVec, faq.embedding),
-  }));
-
-  const docScored = docs.map(chunk => ({
-    source:    'doc',
-    question:  chunk.section,
-    answer:    chunk.content,
-    category:  'Program Info',
-    embedding: chunk.embedding,
-    score:     cosineSimilarity(queryVec, chunk.embedding),
-  }));
-
-  const curatedScored = curatedChunksCache.map(chunk => ({
-    ...chunk,
-    score: cosineSimilarity(queryVec, chunk.embedding),
-  }));
-
-  const all = [...faqScored, ...docScored, ...curatedScored];
-  all.sort((a, b) => b.score - a.score);
-  return all.slice(0, topN);
+  return faqs
+    .map(faq => ({
+      question:  faq.question,
+      answer:    faq.answer,
+      category:  faq.category,
+      score:     cosineSimilarity(queryVec, faq.embedding),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN);
 }
 
 // ─── Pending clarification state (per user) ───────────────────────────────────
-// Map<userId, { options: FAQ[], originalQuery: string }>
 const pendingClarification = new Map();
 
-// ─── Generative Response Builder ─────────────────────────────────────────────
+// ─── Generative Response Builder ──────────────────────────────────────────────
 async function buildFAQResponse(match, score, userQuery) {
   let prompt;
 
-  if (score >= THRESHOLD_EXACT) {
+  if (score >= 0.45) {
     prompt = `You are Zoro, Newton School's friendly and empathetic AI support assistant on Slack.
 
 A student asked: "${userQuery}"
@@ -658,8 +365,8 @@ A student asked: "${userQuery}"
 
 You don't have a confident answer for this. Write a warm Slack message that:
 - Acknowledges their question with empathy
-- Asks 3–4 specific clarifying questions formatted as a list with 🟢 bullet points to understand what they need
-- Each option should be a plausible topic related to their query (e.g. attendance, payments, placements, portal, mentorship, certificates, assignments)
+- Asks 3–4 specific clarifying questions formatted as a list with 🟢 bullet points
+- Each option should be a plausible topic related to their query (e.g. attendance, payments, placements, portal, certificates, assignments)
 - Mentions they can email *${FALLBACK_EMAIL}* if it's urgent
 - Uses Slack markdown and emojis naturally
 
@@ -671,8 +378,7 @@ Only output the message text, no preamble.`;
     return result.response.text().trim();
   } catch (err) {
     console.error("Generative model error:", err.message);
-    // Fallback to raw FAQ answer if generation fails
-    if (score >= THRESHOLD_EXACT) return `*Here's what I found:*\n\n${match.answer}\n\nLet me know if you need anything else! 😊`;
+    if (score >= 0.45) return `*Here's what I found:*\n\n${match.answer}\n\nLet me know if you need anything else! 😊`;
     if (score >= THRESHOLD_PARTIAL) return `Are you asking about *"${match.question}"*?\n\n${match.answer}\n\nIf not, could you share more details? 😊`;
     return `I'd love to help! Could you share a bit more detail so I can point you in the right direction? 😊\n\nOr reach out at *${FALLBACK_EMAIL}* and the team will sort it out!`;
   }
@@ -707,9 +413,9 @@ app.event("message", async ({ event, client, logger }) => {
   if (!userQuery) return;
 
   try {
-    console.log(`📩 Query received: "${userQuery}"`);
+    console.log(`📩 Query: "${userQuery}"`);
 
-    // 1. Handle greetings
+    // 1. Greetings
     if (isGreeting(userQuery)) {
       await client.chat.postMessage({
         channel: event.channel,
@@ -718,31 +424,25 @@ app.event("message", async ({ event, client, logger }) => {
       return;
     }
 
-    // 2. Check for emotional distress FIRST — before FAQ search
+    // 2. Emotional distress — escalate before FAQ search
     const emotion = detectEmotion(userQuery);
     if (emotion) {
       console.log(`💛 Emotion detected: ${emotion}`);
-      const emotionalReply = buildEmotionalResponse(emotion, userQuery);
+      const emotionalReply = buildEmotionalResponse(emotion);
       if (emotionalReply) {
         await client.chat.postMessage({
           channel: event.channel,
           text: emotionalReply,
           blocks: [
-            {
-              type: "section",
-              text: { type: "mrkdwn", text: emotionalReply },
-            },
-            {
-              type: "context",
-              elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_` }],
-            },
+            { type: "section", text: { type: "mrkdwn", text: emotionalReply } },
+            { type: "context", elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_` }] },
           ],
         });
         return;
       }
     }
 
-    // 3. Check if user is replying to a clarification prompt
+    // 3. Handle reply to clarification prompt
     const pending = pendingClarification.get(event.user);
     if (pending) {
       const choice = parseInt(userQuery.trim());
@@ -762,21 +462,14 @@ app.event("message", async ({ event, client, logger }) => {
         return;
       } else {
         pendingClarification.delete(event.user);
-        // If the reply looks like a new question (>15 chars or contains a question word),
-        // treat it as a fresh query instead of escalating
         const looksLikeQuestion = userQuery.length > 15 ||
           /\b(what|when|where|how|why|who|which|can|is|are|do|does|will|my|i)\b/i.test(userQuery);
-        if (looksLikeQuestion) {
-          console.log(`🔁 User asked new question while in pending state — treating as fresh query`);
-          // Fall through to normal FAQ search below (don't return)
-        } else {
-          // Short non-informative reply like "none", "no", "not helpful" — escalate
-          console.log(`🔀 User rejected options — escalating to support`);
+        if (!looksLikeQuestion) {
           const escalationText =
             `No worries at all! 😊 It sounds like your question needs a more personalised response.\n\n` +
-            `Please reach out directly to our support team and they'll be happy to help you out:\n\n` +
+            `Please reach out directly to our support team:\n\n` +
             `✅ *Email:* ${FALLBACK_EMAIL}\n\n` +
-            `Make sure to include a brief description of your query so they can assist you quickly! 🙏`;
+            `Include a brief description of your query so they can assist you quickly! 🙏`;
           await client.chat.postMessage({
             channel: event.channel,
             text: escalationText,
@@ -790,40 +483,27 @@ app.event("message", async ({ event, client, logger }) => {
       }
     }
 
-    // 4. Normal FAQ search
+    // 4. FAQ search
     const topMatches = await findTopMatches(userQuery);
     const best = topMatches[0];
+    console.log(`🎯 Best match: ${Math.round(best.score * 100)}% — "${best.question}"`);
+    trackUnseen(userQuery, best.score);
 
-    // Prefer FAQ over doc/curated when scores are close — FAQs are more specific
-    const bestFAQ = topMatches.find(m => m.source === 'faq');
-    const chosen = (best.source !== 'faq' && bestFAQ && bestFAQ.score >= THRESHOLD_PARTIAL && (best.score - bestFAQ.score) < 0.15)
-      ? bestFAQ
-      : best;
-
-    console.log(`🎯 Best match: ${Math.round(best.score * 100)}% [${best.source}] — "${best.question}"`);
-    if (chosen !== best) console.log(`🔀 Preferring FAQ: ${Math.round(chosen.score * 100)}% — "${chosen.question}"`);
-    trackUnseen(userQuery, chosen.score);
-
-    const threshold = (chosen.source === 'doc' || chosen.source === 'curated') ? THRESHOLD_HIGH_DOC : THRESHOLD_HIGH_FAQ;
-    if (chosen.score >= threshold) {
+    if (best.score >= THRESHOLD_HIGH) {
       // High confidence — answer directly
-      const replyText = await buildFAQResponse(chosen, chosen.score, userQuery);
+      const replyText = await buildFAQResponse(best, best.score, userQuery);
       await client.chat.postMessage({
         channel: event.channel,
         text: replyText,
         blocks: [
           { type: "section", text: { type: "mrkdwn", text: replyText } },
-          { type: "context", elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_ • Confidence: ${Math.round(chosen.score * 100)}%` }] },
+          { type: "context", elements: [{ type: "mrkdwn", text: `_Zoro – Newton School's support assistant_ • Confidence: ${Math.round(best.score * 100)}%` }] },
         ],
       });
     } else {
-      // Below threshold — ask user to pick the most relevant option
-      // Prefer FAQ matches in clarification — they are more specific than doc/curated chunks
-      const allRelevant = topMatches.filter(m => m.score >= THRESHOLD_PARTIAL);
-      const faqRelevant = allRelevant.filter(m => m.source === 'faq');
-      const relevantOptions = faqRelevant.length >= 2 ? faqRelevant : allRelevant;
+      // Medium confidence — show clarification options (FAQ matches only)
+      const relevantOptions = topMatches.filter(m => m.score >= THRESHOLD_PARTIAL);
       if (relevantOptions.length === 0) {
-        // Nothing relevant at all — generic fallback
         const replyText = await buildFAQResponse(best, best.score, userQuery);
         await client.chat.postMessage({
           channel: event.channel,
@@ -837,11 +517,7 @@ app.event("message", async ({ event, client, logger }) => {
       }
 
       pendingClarification.set(event.user, { options: relevantOptions, originalQuery: userQuery });
-
-      const optionLines = relevantOptions
-        .map((m, i) => `*${i + 1}.* ${m.question}`)
-        .join("\n");
-
+      const optionLines = relevantOptions.map((m, i) => `*${i + 1}.* ${m.question}`).join("\n");
       const clarifyText =
         `I want to make sure I give you the right answer! 🤔\n\n` +
         `Could you tell me which of these best matches what you're looking for?\n\n` +
@@ -874,10 +550,7 @@ app.event("app_home_opened", async ({ event, client }) => {
     view: {
       type: "home",
       blocks: [
-        {
-          type: "header",
-          text: { type: "plain_text", text: "👋 Hi, I'm Zoro!" },
-        },
+        { type: "header", text: { type: "plain_text", text: "👋 Hi, I'm Zoro!" } },
         {
           type: "section",
           text: {
@@ -900,30 +573,17 @@ app.event("app_home_opened", async ({ event, client }) => {
 
 // ─── Crash recovery ───────────────────────────────────────────────────────────
 process.on("unhandledRejection", (reason) => {
-  const msg = reason?.message || String(reason);
-  console.log("⚠️ Unhandled promise rejection (continuing):", msg);
-  // Don't exit — network blips during background sync shouldn't kill the bot
+  console.log("⚠️ Unhandled rejection (continuing):", reason?.message || String(reason));
 });
 
 process.on("uncaughtException", (err) => {
   const msg = err.message || "";
-  // Network errors from background sync — log and continue, no restart needed
-  if (
-    msg.includes("ENOTFOUND") ||
-    msg.includes("fetch failed") ||
-    msg.includes("ECONNRESET") ||
-    msg.includes("ETIMEDOUT") ||
-    msg.includes("EPIPE") ||
-    msg.includes("socket hang up")
-  ) {
+  if (["ENOTFOUND", "fetch failed", "ECONNRESET", "ETIMEDOUT", "EPIPE", "socket hang up"].some(e => msg.includes(e))) {
     console.log("⚠️ Network error in background task (continuing):", msg);
     return;
   }
-  // Slack SDK state machine errors require a full restart (state is broken)
   console.error("💥 Uncaught exception — restarting in 3s:", msg);
-  setTimeout(() => {
-    process.exit(1);
-  }, 3000);
+  setTimeout(() => process.exit(1), 3000);
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
@@ -931,17 +591,8 @@ process.on("uncaughtException", (err) => {
   await app.start();
   console.log("⚡ Zoro is live on Slack (Socket Mode)!");
 
-  // Pre-load from DB immediately — bot answers queries while sync runs in background
   faqCache = loadCacheFromDB();
-  docChunksCache = db.prepare("SELECT * FROM doc_chunks").all().map(r => ({
-    source: 'doc', section: r.section, content: r.content,
-    embedding: JSON.parse(r.embedding),
-  }));
-  if (faqCache.length)   console.log(`📦 Loaded ${faqCache.length} FAQs from DB (syncing in background…)`);
-  if (docChunksCache.length) console.log(`📦 Loaded ${docChunksCache.length} doc chunks from DB`);
+  if (faqCache.length) console.log(`📦 Loaded ${faqCache.length} FAQs from DB (syncing in background…)`);
 
-  // Background syncs — check for changes, update cache if needed
-  syncCuratedChunks().catch(err => console.log("⚠️ Curated sync failed:", err.message));
   _doSyncFAQs().catch(err => console.log("⚠️ Startup FAQ sync failed:", err.message));
-  syncDocChunks().catch(err => console.log("⚠️ Startup doc sync failed:", err.message));
 })();
