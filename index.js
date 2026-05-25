@@ -127,6 +127,21 @@ function rowHash(question, answer) {
   return crypto.createHash("sha256").update(question + "|||" + answer).digest("hex");
 }
 
+function cleanupCorruptedFAQs() {
+  const result = db.prepare(`
+    DELETE FROM faqs WHERE
+      question LIKE '%{%' OR
+      question LIKE '<%' OR
+      question LIKE '%function%' OR
+      question LIKE '%document.%' OR
+      question LIKE '%addEventListener%' OR
+      question LIKE '%prototype%' OR
+      question LIKE '%return this%' OR
+      length(question) > 300
+  `).run();
+  if (result.changes > 0) console.log(`🧹 Removed ${result.changes} corrupted FAQ entry(ies) from DB`);
+}
+
 // ─── CSV Parser ───────────────────────────────────────────────────────────────
 function parseCSV(text) {
   const rows = [];
@@ -232,6 +247,12 @@ async function _doSyncFAQs() {
   console.log("🔄 Checking Google Sheet for FAQ changes…");
   const res = await fetch(SHEET_CSV_URL);
   const csv = await res.text();
+
+  if (csv.trim().startsWith('<') || !csv.includes(',')) {
+    console.log("⚠️ CSV URL returned HTML instead of CSV — skipping sync, keeping existing DB data");
+    faqCache = loadCacheFromDB();
+    return faqCache;
+  }
 
   const allRows = parseCSV(csv);
   const sheetRows = allRows
@@ -591,6 +612,7 @@ process.on("uncaughtException", (err) => {
   await app.start();
   console.log("⚡ Zoro is live on Slack (Socket Mode)!");
 
+  cleanupCorruptedFAQs();
   faqCache = loadCacheFromDB();
   if (faqCache.length) console.log(`📦 Loaded ${faqCache.length} FAQs from DB (syncing in background…)`);
 
