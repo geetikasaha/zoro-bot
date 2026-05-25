@@ -1,62 +1,69 @@
 Category,Sub-Category,Question,Answer
-Academic,Attendance,Why is my attendance not recorded?,"Attendance is recorded only when you watch the session on the NS portal itself and at least 70% of the video is watched. Watching downloaded videos or exceeding a playback speed of 2x will not count in your attendance. Make sure you watch the full recording."
-Academic,Attendance,Will watching recorded videos count toward attendance?,"Yes, there are three types of attendance: Recorded Attendance, Live Attendance, and Overall Attendance. The eligibility criteria are set for overall attendance — attending live or watching recorded both count."
-Academic,Attendance,Where can I see my attendance?,"You can check your attendance details under the My Timeline section for all modules. Use the option to watch lectures on the right side to increase your attendance."
+Academic,Attendance,Why is my attendance not recorded?,"Attendance is recorded only when you watch the session on the NS portal itself and at least 70% video is watched. Watching downloaded videos or exceeding a playback speed of 2x will not count in your attendance. Also make sure you watch the full recording."
+Academic,Attendance,Will watching recorded videos count toward attendance?,"Yes, there are three types of attendance: Recorded Attendance, Live Attendance, and Overall Attendance. The eligibility criteria are set for overall attendance, attending live or watching recorded both count for attendance."
+Academic,Attendance,Where can I see my attendance project score assignment completion and contest score?,"You can check your attendance details under the My Timeline section for all modules. You can utilise the option to watch lectures on the right side to increase your attendance."
 Academic,Assignments,Why is my assignment not visible?,Assignments are linked to the respective modules. Ensure you are in the correct section of your timeline.
 Academic,Projects,Why is my project not visible?,"Go to the My Timeline section and select the relevant Learning Unit (LU) with the correct module name and put the filter for assignments."
 Academic,Projects,For project review or evaluation.,"Reach out to your PI who will push the project for evaluation. The turnaround time (TAT) is 2-3 days."
 Academic,Contests,Why is my contest not visible?,"The contest is accessible only once within its timeline. If the contest is not visible, it has most likely expired for you."
-Escalations,"Course cancellations, Finance-related queries, EMI issues",Whom to reach for course cancellations and finance related queries?,"For cancellation requests or any finance related issues, please write to your progression in charge. If your course duration is over you can reach out to our support email ID."
+Escalations,"Course cancellations, Finance-related queries, EMI issues",Whom to reach for course cancellations finance-related queries and EMI issues?,"For cancellation requests or any finance related issues, please write to your progression in charge. If your course duration is over then you can reach out to our support email ID."
 Escalations,Referral bonuses related queries,Who to contact for referral bonus queries?,Success Manager
 Escalations,"Rescheduling or Postponing interviews, Certificate Requests",Which team to connect for rescheduling interviews or certificate requests?,Placement Mentor or placements.ds@newtonschool.co
 Escalations,Concession Requests,Concession Requests,"Policies are fixed and no concessions can be granted. Please go through policies in the course info section of your portal."
-Support,Technical Support Issues,If the issue persists after watching explainer videos,"If the issue persists after watching explainer videos, advise students to raise a ticket. Requests should include screenshots or videos of the issue and a short description of the problem."
-General,Point of Contact,Who will be my point of contact?,"The support team is your primary point of contact for all queries once the course is done. Please feel free to reach out to support@newtonschool.co in case of any queries."
+Support,Technical Support Issues,Facing technical issue,"If the issue persists after hard refreshing and clearing cookies and cache, advise students to raise it to progression incharge. Requests should include screenshots or videos of the issue and a short description of the problem."
 General,Point of Contact,Can I get an extension of PI support?,"PI support cannot be extended. However, in special cases, NS may grant an extension of up to 1 month depending upon the situation."
-Certificates,Certificates,Where can I download certificates?,"There are three types of certificates: Course Completion Certificate (sent via email after course completion), Module Completion Certificate (available on the feed section of the portal), and Phase Completion Certificate (available upon request through the support team, sent via email)."
-Academics,Attendance,Why is my attendance not recorded?,"Attendance is recorded only when you watch the session on the NS portal itself. Watching downloaded videos or exceeding a playback speed of 2x will not count. Complete watching the entire video."
-Academics,Attendance,Will watching recorded videos count toward attendance?,"Yes, but it will only contribute to your Recorded Attendance. There are three types: Recorded Attendance, Live Attendance, and Overall Attendance. Both live and recorded count for overall attendance."
-Academics,Attendance,Where can I see my attendance?,"You can check your attendance details under the My Timeline section for all modules. Use the option to watch lectures on the right side to increase your attendance."
+Certificates,Certificates,Where can I get certificates?,"There are three types of certificates: Course Completion Certificate (sent via email after course completion), Module Completion Certificate (available on the feed section of the portal), and Phase Completion Certificate (available upon request through the support team, sent via email after the request is processed)."
+Academics,Attendance,Why is my attendance not recorded?,Attendance is recorded only when you watch the session on the NS portal itself. Watching downloaded videos or exceeding a playback speed of 2x will not count in your attendance. Complete watching the entire video.
+Academics,Attendance,Will watching recorded videos count toward attendance?,"Yes, but it will only contribute to your Recorded Attendance. There are three types: Recorded Attendance, Live Attendance, and Overall Attendance. The eligibility criteria are set for overall attendance, attending live or watching recorded both count for attendance."
+Academics,Attendance,Where can I see my attendance?,"You can check your attendance details under the My Timeline section for all modules. You can utilise the option to watch lectures on the right side to increase your attendance."
 Academics,Assignments,Why is my assignment not visible?,Assignments are linked to the respective modules. Ensure you are in the correct section of your timeline.
-Academics,Assignments,What to do if I do not have edit access and can only view the spreadsheet assignment?,"The access of the assignment is available only on the registered email ID. Ensure you open the assignment with the registered email address only."
+Academics,Assignments,What to do if I do not have the edit access and can only view the spreadsheet assignment?,"The access of the assignment is available only on the registered email ID. Ensure you open the assignment with the registered email address only."
 Academics,Projects,What if my project is not visible?,"Go to the My Timeline section and select the relevant Learning Unit (LU) and put the filter for assignments."
 Academics,Projects,How to submit the project as a single file?,Merge the files into a single zip file before submission.
 Academics,Projects,What to do if my submission size exceeds 10 MB?,Upload the zip file to Google Drive and share the link. Ensure the drive link has viewing access for the evaluators to check.
-Academics,Projects,How can I request a project review?,"Reach out to your PI if you still have PI access. Otherwise reach out at support@newtonschool.co who will push the project for evaluation. The turnaround time (TAT) is 2-3 days."
+Academics,Projects,How to make a zip file?,You can search for how to make a zip file on YouTube for step by step instructions.
+Academics,Projects,How can I request a project review?,"Reach out to your PI if you still have PI access. Or else reach out at support@newtonschool.co who will push the project for evaluation. The turnaround time (TAT) is 2-3 days."
 Academics,Projects,What to do if I was not able to score 8 or above in my project?,You can reattempt the project to better your scores.
 Academics,Contests,Why is my contest not visible?,"The contest is accessible only once within its timeline. If the contest is not visible, it has most likely expired for you."
 Academics,Contests,What do I do if I have missed my contest?,"Complete your assignments and score more than 8/10 in the projects to become eligible for grooming."
 Placement Related,Grooming,What is a grooming session?,Grooming involves mock interviews and preparation sessions aligned with industry standards. Each phase has a separate grooming.
 Placement Related,Grooming,How many sessions are taken in grooming?,"At least 4 sessions are conducted, but the number may vary depending on the student's skills."
-Placement Related,Grooming,How can I move to grooming?,"Eligibility: 2 Projects with score 8/10 or greater (SQL and Spreadsheet) plus contest clearance. If unable to clear the contest: 2 Projects with high clearance scores (8/10)."
+Placement Related,Grooming,How can I move to grooming?,"Eligibility: 2 Projects with score 8/10 or greater (SQL and Spreadsheet) plus contest clearance. If unable to clear or attend the contest: 2 Projects with high clearance scores (8/10)."
 Placement Related,Placements,How can I sit for placements or company referrals?,"Ensure you meet all placement eligibility criteria. For further details, reach out to support at support@newtonschool.co."
 Placement Related,Placements,What if my PI is not responding?,"As your course is now complete, access to PI support is no longer available. For any further help, raise a query with the support team at support@newtonschool.co."
 Placement Related,Placements,Who is the placement point of contact?,"For placement-related queries, reach out to the support team. They will escalate the issue to the placement team. If the student is already under grooming then their groomer becomes their placement POC."
 Technical Issues,Visibility,Why is my course not visible?,"After the course duration ends, it moves to the Past Courses tab. Switch to this tab to access it."
 Technical Issues,Visibility,I am unable to see recordings of sessions. What should I do?,"Access recordings from your dashboard on the Newton School portal. Go to the My Timeline section, select the relevant module, and put the filter for lectures."
 Technical Issues,Visibility,How can I make or update my resume?,Update your profile in your NS Dashboard for resume creation or modifications.
-Technical Issues,Visibility,How can I catch up from where I left off?,"On the NS dashboard under the Your Performance section, click on Lectures. Use the relevant filters to find the videos you have not previously seen."
-Escalations,Batch Change,Can I stop my course?,"Course cancellation is only possible within the first 15 days of enrollment as per the policy. For more queries, raise a ticket with the support team at support@newtonschool.co."
-Escalations,Batch Change,How can I change my batch?,"You can defer or change your batch twice: First deferral is free of cost. Second deferral costs 15000 rupees. Deferral requests must be made within 3 months of the course start."
-General,Referrals,How can I refer someone to join Newton School?,"There are 2 ways: Use the Refer Now button on your NS Dashboard and fill out the details. Or use the referral form available on the portal."
-General,Referrals,How can I get my referral bonus?,"You can get your referral bonus only if the referred candidate remains enrolled for 3 or more months and completes 3 successful payments. Please reach out to support@newtonschool.co to raise a referral bonus query."
-General,Additional Queries,How can I clear backlogs or catch up if I am unavailable for some time?,"You can book a TA session to help clear backlogs or doubts. TA sessions can be booked up to 1 month after the course closure. After that the student will have to complete their backlogs on their own."
-General,Additional Queries,Can I access classes on mobile phone,"We suggest you use your laptop or PC to attend the lecture as we have in-class assignments to solve during the class which you will not be able to do on mobile. But yes you can watch the lecture on your phone."
+Technical Issues,Visibility,How can I catch up from where I left the last time I was active?,"On the NS dashboard under the Your Performance section, click on Lectures. Use the relevant filters to find the videos you have not previously seen."
+Escalations,Batch Change and Course Cancellation Policy,Can I stop my course?,"Course cancellation is only possible within the first 15 days of enrollment as per the policy. For more queries, raise a ticket with the support team at support@newtonschool.co."
+Escalations,Batch Change and Course Cancellation Policy,How can I change my batch?,"You can defer or change your batch twice: First deferral is free of cost. Second deferral costs Rs 15000. Deferral requests must be made within 3 months of the course start. Post that no deferrals will be accepted."
+General,Referrals,How can I refer someone to join Newton School?,"There are 2 ways: A Refer Now button is available on your NS Dashboard, fill out the details of the candidate you are referring to be eligible for the referral bonus. Or use the referral form available on the portal."
+General,Referrals,How can I get my referral bonus?,"You can get your referral bonus only if the referred candidate remains enrolled in the NS course for 3 or more months and completes 3 successful payments. Please reach out to support@newtonschool.co to raise a referral bonus query."
+General,Additional Queries,How can I clear backlogs or catch up if I am unavailable for some time?,"You can book a TA session to help clear backlogs or doubts. TA sessions can be booked up to 1 month after the course closure (Last Lecture date). After that the student will have to complete their backlogs on their own."
+General,Additional Queries,Can I access classes on mobile phone?,"We suggest you use your laptop or PC to attend the lecture as we have in-class assignments to solve during the class which you will not be able to do on mobile. But yes you can watch the lecture on your phone."
 General,Additional Queries,For how long do I have access to mentor sessions after the course ends?,Mentor sessions will remain available for 1 month after the course closure (Last Lecture date).
 General,Additional Queries,What do I do if my access has been revoked from the portal?,"If your access has been revoked, it is most likely due to pending fees or outstanding EMIs."
-General,Additional Queries,How can I get back my portal access?,"Once the due fee is paid successfully, the team will restore your access. If you are still facing issues please share the screen recording of the issue to support@newtonschool.co."
-General,Additional Queries,How to book a TA session,"In Newton School portal on the left hand side you have multiple tabs. You can book TA or doubt solving sessions from there."
+General,Additional Queries,How can I get back my portal access?,"Once the due fee is paid successfully, the team will restore your access. If you are still facing any issues on portal, please share the screen recording of the issue to support@newtonschool.co."
+General,Additional Queries,How to book a TA session?,"In Newton School portal on the left hand side you have multiple tabs. You can book TA or Doubt solving session from the Expert Session tab."
+General,Additional Queries,How to book a mentor session?,"In Newton School portal on the left hand side you have multiple tabs. You can book mentor session from the Expert Session tab."
+General,Additional Queries,Will mentor solve my doubt or what is the role of mentor?,Mentor will guide you only on industry understanding not on curriculum or academic doubts.
+General,Additional Queries,I am not able to edit preference tab.,Please reach out to your success manager.
+General,Additional Queries,Where can I find recording of the lecture?,Go to your Newton School portal and go to home and scroll down to find lecture recordings.
+General,Additional Queries,How to attend contest?,"Contest is available on the home tab under contest section. You can only attempt the contest in the stipulated time shared by your PI."
+General,Additional Queries,Where can I upload my Resume?,Complete your profile section to generate a resume.
+General,Additional Queries,What are contest timings or when is my contest?,"Generally contests happen on Sundays between 2pm to 4pm. For your batch please check with your PI about the upcoming contest and dates or check on your batch Slack channel."
 Academics,Projects,I am not able to clear my spreadsheet project what can I do?,Try to follow the instructions provided in feedback if already submitted or book a TA session to take help from the mentor. They will guide you properly.
-Academics,Additional Queries,My PI is not responding what to do?,"If your PI is not responding you can drop a mail to your PI or drop a mail to shivangi.tiwari@newtonschool.co"
+Academics,Additional Queries,My PI is not responding what to do?,If your PI is not responding you can drop a mail to your PI or drop a mail regarding this to shivangi.tiwari@newtonschool.co
 Academics,Contests,I am not able to clear my module contest what to do next?,If you are not able to clear your module contest then you can go for a reattempt if present or clear the project of that module.
 Academics,Attendance,My attendance dropped suddenly what should I do?,Try to join the session on time and join sessions online and watch lectures on a daily basis.
 Academics,Attendance,Why is my recorded attendance not increasing even after watching videos?,Make sure that you are watching recorded lectures on the portal itself without downloading. Once you watch the full video your attendance will be recorded.
-Academics,Attendance,If the video is stuck or buffering will attendance count?,"Please do CTRL + Shift + R and restart. It will be recorded."
+Academics,Attendance,If the video is stuck or buffering will attendance count?,"Please do CTRL + Shift + R and restart, it will be recorded."
 Academics,Attendance,Can I rewatch videos and still get attendance?,Rewatching will not give you attendance once it has already been recorded.
-Academics,Attendance,My live class did not get marked as attended how to fix it?,"Make sure you watch the live lecture till end. If it has not recorded you can watch the recording and your revision will be done too."
+Academics,Attendance,My live class did not get marked as attended how to fix it?,"Make sure you watch the live lecture till the end. If it has not recorded you can watch the recording and your revision will be done too."
 Academics,Attendance,Will attending with low network affect attendance?,"No, but we suggest that you watch the lecture with good network for the best experience."
 Academics,Attendance,My timeline is not showing old lectures where do I find them?,Please check the filter applied for the specified module in My Timeline.
-Academics,Attendance,Why is the watch time showing less than the video duration?,Please drop a mail to support@newtonschool.co
+Academics,Attendance,Why is the watch time showing less than the video duration?,"If you have fast-forwarded the video then the time covered is less. You can connect with your progression in charge to understand this better."
 Academics,Assignments,My assignment link is not opening what should I do?,"Please do CTRL + Shift + R and restart."
 Academics,Assignments,My assignment shows Submitted but it still appears incomplete.,Please drop a mail to support@newtonschool.co
 Academics,Assignments,Can I resubmit an assignment after deadline?,Yes you can submit the assignment after the deadline but we suggest that you complete your task on time.
@@ -68,7 +75,7 @@ Academics,Assignments,Can I submit the project after the due date?,"Yes you can,
 Academics,Assignments,My Drive link is not opening for the evaluator what access should I give?,"Make a zip file, upload it to Drive and paste the drive link. Make sure the drive link is accessible to all."
 Academics,Contests,Why did I fail the contest even after scoring well?,Please drop a mail to support@newtonschool.co or connect with your PI.
 Academics,Contests,Can I reattempt the contest if I had network issues?,"Excel mid module contest: 1 attempt. Excel main module contest: 2 attempts. SQL mid-module contest: 2 attempts. SQL Main module contest: 2 attempts."
-Academics,Contests,My contest did not load properly can I get another chance?,"Please report contest technical issues during the contest itself. If you are facing issues please do CTRL Shift R and restart."
+Academics,Contests,My contest did not load properly can I get another chance?,"Please report contest technical issues during the contest itself. If you are facing issues please do CTRL + Shift + R and restart."
 Academics,Contests,Will missing one contest affect placements?,"Yes, we have assigned all tasks very thoughtfully. Any issues during the contest should be reported to your Success Manager on the given timeline."
 Academics,Contests,Contest timer started automatically what to do?,This is designed to give you the proper environment of technical interviews. Please try to complete the contest on the given timeline.
 Placements,Placements,What happens if I miss a grooming session?,You will not be eligible for any placement activities.
@@ -76,33 +83,45 @@ Placements,Placements,Can I change my groomer?,"We do not suggest changing groom
 Placements,Placements,How do I know if I am grooming eligible?,Make sure you complete at least two projects of Excel and SQL with a score of 8 and above.
 Placements,Placements,How can I prepare for interviews meanwhile?,"You can solve arena questions and guesstimates. You can also ask for website recommendations from your grooming mentor or batch mentor."
 Placements,Placements,When will I get my first mock interview?,Make sure you complete at least two projects of Excel and SQL with a score of 8 and above.
-Placements,Placements,Why am I not getting company opportunities?,"If you have cleared the given criteria and still not getting company opportunities please check with your placement mentor or support@newtonschool.co / placements.ds@newtonschool.co"
+Placements,Placements,Why am I not getting company opportunities?,"If you have cleared the given criteria and still not getting company opportunities please check with your placement mentor or support@newtonschool.co or placements.ds@newtonschool.co"
 Placements,Placements,What is placement assessment and do I need to clear it?,Yes placement assessments are compulsory to clear to avail placement opportunities with Newton School.
 Placements,Placements,Can I defer my grooming?,No.
-Placements,Placements,I am in grooming but no one has contacted me yet.,Please connect with your success manager or drop a mail to support@newtonschool.co / placements.ds@newtonschool.co
+Placements,Placements,I am in grooming but no one has contacted me yet.,Please connect with your success manager or drop a mail to support@newtonschool.co or placements.ds@newtonschool.co
 Placements,Placements,How frequently will companies come?,Everyday we get more than 50 companies onboard with us.
 Placements,Placements,What salary packages can I expect?,It will depend upon the skills you have acquired through the course.
 Placements,Placements,Will Newton School help in negotiating salary?,Yes our placement team is dedicated to pursuing the best for our students.
-General access,Technical issues,My portal is showing blank what should I do?,"Please do CTRL + Shift + R and restart."
-General access,Technical issues,My login is not working even with the correct email.,Please try with your registered email ID. If the issue still persists please connect with your success manager or drop a mail to support@newtonschool.co
+General access,Technical issues,My portal is showing blank what should I do?,"Please do CTRL + Shift + R and Restart."
+General access,Technical issues,My login is not working even with the correct email.,"Please try with your registered email ID. If the issue still persists, please connect with your success manager or drop a mail to support@newtonschool.co"
 General access,Technical issues,I cannot see quizzes where do I find them?,"Go to My Timeline. Below your performance report you can put a filter for Quizzes."
-General access,Technical issues,Dashboard is not loading how to fix it?,"Please do CTRL + Shift + R."
+General access,Technical issues,Dashboard is not loading how to fix?,"Please do CTRL + Shift + R."
 General access,Technical issues,My videos show Access Denied.,Please drop a mail to support@newtonschool.co or connect with your PI.
 General access,Technical issues,I accidentally logged out of all devices how to reset?,"Please login using your registered email ID or phone number."
 Finance related issues,Additional Queries,Why did I get a payment reminder even after paying?,Please raise a request to admissions-success@newtonschool.co
 Finance related issues,Additional Queries,EMI amount is different from what I expected whom to contact?,Please raise a request to admissions-success@newtonschool.co
 Finance related issues,Additional Queries,Can I pause EMI because of financial issues?,Please raise a request to admissions-success@newtonschool.co
-Finance related issues,Additional Queries,I cannot pay my EMI what should I do?,Please raise a request to admissions-success@newtonschool.co
 Finance related issues,Additional Queries,I have paid EMI but my access is still blocked.,Please raise a request to admissions-success@newtonschool.co
-Finance related issues,Additional Queries,How to change my EMI date?,Please drop a mail to support@newtonschool.co
+Finance related issues,Additional Queries,I cannot pay EMI or I want to stop my EMI or how to change my EMI date?,"Please drop a mail to support@newtonschool.co for any payment related issues. This will be checked by our finance team. Please note, change in EMI related options is not possible."
 Finance related issues,Additional Queries,My loan partner is asking for documents again what to do?,Please drop a mail to support@newtonschool.co
-Outcome,Certificates,Didn't receive my completion certificate why?,"Please check if you have cleared the certification criteria: Attendance 80%, Assignment 80%, Project score 8 and above."
+Outcome,Certificates,I did not receive my completion certificate why?,"Please check if you have cleared the certification criteria: Attendance 80%, Assignment 80%, Project score 8 and above."
 Outcome,Certificates,My certificate has wrong name how to correct it?,"Please correct the name mentioned on your portal. If the certificate is already issued, please raise a correction request to your Success Manager or to support@newtonschool.co"
 Outcome,Certificates,How much time does it take to receive certificates?,As soon as you complete your certification criteria your certificate will be released within 15 to 30 days of completion.
 Outcome,Certificates,Can I get the certificate in PDF only?,You will get the certificate in the mail in the given format.
 Outcome,Certificates,Can I use NS certificate for job applications?,"Yes, you can."
 Admission,Onboarding,How do I set up Slack?,Please install Slack on your phone then login using your credentials.
 Admission,Onboarding,I am enrolled in a new batch when are classes starting?,"New batch classes start in the first week of the month. Please drop a mail to support@newtonschool.co for more clarification."
+Admission,Onboarding,What is NSDC Setup?,Please refer to the guide given on the Newton School portal.
+Admission,Onboarding,When can I expect to receive my goodies?,"Please check if you have filled the form for the goodies. If yes then usually the time taken is 60 days."
 Admission,Onboarding,Who is my point of contact?,"A Success Manager will be assigned to you for all assistance on the day of orientation. Till then you can reach out to your academic counsellor or drop a mail to support@newtonschool.co"
 Admission,Onboarding,How to use the Newton School portal?,"A summary video is attached in the introduction video. Detailed usage of the portal will be given in the first PI syncup."
 Academics,Attendance,What are the class timings?,"Regular classes happen Monday, Wednesday, Friday 9 to 11 PM. If there are any changes to the schedule we inform you over the main Slack channel. For a new batch classes start from the first week of the month."
+Academic,Attendance,What is the minimum lecture attendance requirement?,Learners must maintain a lecture attendance of greater than 80% to meet the learner engagement criteria.
+Academic,Assignments,What is the required completion criteria for assignments?,You are required to complete and submit more than 80% of your assignments to remain compliant with learner engagement guidelines.
+Academic,Quizzes,What is the minimum criteria for quizzes?,Learners must complete and score appropriately in more than 80% of the total quizzes.
+Academic,Projects,What are the project completion requirements?,You must finish and successfully submit more than 80% of the assigned projects to satisfy engagement and grooming path parameters.
+Academic,Contest,What score is required in the Module Contests?,Learners need to score greater than 65% in their Module Contests.
+Placements,Profile Completion,What profile and resume details need to be completed for placement eligibility?,"To be eligible for placements, your details must be 100% complete, your resume must be 100% complete, and your Outcome Expectations must also be 100% complete."
+Placements,Placement Contest,What is the cut-off score for placement contests?,Learners must achieve a score greater than 65% in the placement contests held at the end of every subject.
+Placements,Mock Interview,What is the qualification score for mock interviews?,You must score greater than 80% in your mock interviews conducted at the end of Phase 1 and Phase 2.
+Placements,Grooming Path,What are the tracks available for the grooming path after the intake interview?,"Based on your intake interview, you will route into either the DA (Data Analyst) Grooming, ML (Machine Learning) Grooming, or BA (Business Analyst) Grooming track."
+Placements,Grooming Interview,Is it mandatory to clear the Grooming Interview?,"Yes, along with maintaining more than 80% in lectures, assignments, quizzes, and projects, your Grooming Interview status must be explicitly Cleared."
+Program Support,Contacts,Who are my key points of contact during the program?,Your primary point of contact is your Success Manager.
