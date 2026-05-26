@@ -417,6 +417,7 @@ app.command("/zoro-stats", async ({ ack, respond }) => {
 
 // ─── Handle DMs ───────────────────────────────────────────────────────────────
 app.event("message", async ({ event, client, logger }) => {
+  console.log(`🔍 MSG EVENT: channel_type=${event.channel_type}, bot_id=${event.bot_id || "none"}, subtype=${event.subtype || "none"}`);
   if (event.channel_type !== "im" || event.bot_id || event.subtype) return;
 
   const userQuery = event.text?.trim();
